@@ -40,6 +40,10 @@ header {
    overflow: hidden;
 }
 
+header b:before {
+   color: #8A8A8A;
+}
+
 /* vertically center banner section */
 header:before {
    content: '';
