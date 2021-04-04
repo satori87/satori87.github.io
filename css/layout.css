@@ -817,6 +817,18 @@ call-to-action .button {
    color: #ebeeee;
 }
 
+#footer h1 span { display: none; }
+#footer h1:before {
+   font-family: 'FontAwesome';
+   content: "\f0e0";
+	padding-right: 10px;
+	font-size: 72px;
+   line-height: 72px;
+   text-align: left;
+   float: left;
+   color: #ebeeee;
+}
+
 #contact h4 {
    font: 16px/24px 'opensans-bold', sans-serif;
    color: #EBEEEE;
@@ -975,6 +987,16 @@ footer .social-links li {
 }
 
 footer .social-links li:first-child { margin-left: 0; }
+
+
+footer h1 span { display: none; }
+footer h1:before {
+   font-family: 'FontAwesome';
+   content: "\f0e0";
+
+   
+}
+
 
 /* Go To Top Button */
 #go-top {
