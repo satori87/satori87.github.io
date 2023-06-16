@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="planetarium">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/planetarium.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
