@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creating a Map - Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="getting-started.html">Getting Started</a>
+            <a href="creating-a-map.html" class="active">Creating a Map</a>
+            <a href="tile-layers.html">Tile Layers</a>
+            <a href="object-layers.html">Object Layers</a>
+            <a href="map-properties.html">Map Properties</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="coordinate-reference.html">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="getting-started.html" class="prev">Getting Started</a>
+            <a href="tile-layers.html" class="next">Tile Layers</a>
+        </div>
+
+        <h1>Creating a Map</h1>
+        <p class="subtitle">Set up a new map file with the correct settings, add tilesets, and create your layers.</p>
+
+        <!-- ========================================
+             NEW MAP DIALOG
+             ======================================== -->
+        <h2>Creating a New Map</h2>
+
+        <p>To create a new map, go to <strong>File &gt; New &gt; New Map...</strong> in Tiled. You will see the New Map dialog with several options. Set them as follows:</p>
+
+        <img src="img/tiled-new-map-dialog.png" alt="The New Map dialog in Tiled with the correct settings highlighted: Orthogonal orientation, CSV format, 32x32 tile size, Right Down render order" class="screenshot">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Setting</th>
+                    <th>Value</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Orientation</td>
+                    <td><code>Orthogonal</code></td>
+                    <td>The only supported orientation</td>
+                </tr>
+                <tr>
+                    <td>Tile layer format</td>
+                    <td><code>CSV</code></td>
+                    <td>Required &mdash; the engine only parses CSV format</td>
+                </tr>
+                <tr>
+                    <td>Tile render order</td>
+                    <td><code>Right Down</code></td>
+                    <td>Default, do not change</td>
+                </tr>
+                <tr>
+                    <td>Map size</td>
+                    <td><code>Fixed</code></td>
+                    <td>Choose your desired width and height in tiles (e.g., 16x16, 32x32, 64x64)</td>
+                </tr>
+                <tr>
+                    <td>Tile size</td>
+                    <td><code>32 x 32</code> px</td>
+                    <td><strong>Mandatory</strong> &mdash; hardcoded in the engine for all coordinate math</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="warning-box">
+            The tile size <strong>must</strong> be 32x32 pixels. The game engine uses this value for converting
+            between pixel coordinates and world positions. Using a different tile size will cause objects, warps,
+            and spawns to appear in the wrong locations.
+        </div>
+
+        <!-- ========================================
+             SAVING THE MAP
+             ======================================== -->
+        <h2>Saving Your Map</h2>
+
+        <p>
+            Map files must be saved in <strong>two locations</strong> for both the game client and server to find them:
+        </p>
+
+        <ol>
+            <li><strong>Client:</strong> <code>assets/tiled/maps/</code></li>
+            <li><strong>Server:</strong> <code>odyssey-server/src/main/resources/tiled/maps/</code></li>
+        </ol>
+
+        <p>
+            The filename (without the <code>.tmx</code> extension) becomes the <strong>map ID</strong> used
+            throughout the game. For example, if you save your map as <code>dark-cavern.tmx</code>, its map ID
+            will be <code>dark-cavern</code>. This ID is what you use in warp targets, bootmap destinations,
+            and other references.
+        </p>
+
+        <div class="tip-box">
+            Use lowercase names with hyphens for map filenames (e.g., <code>orc-camp.tmx</code>,
+            <code>forest-path.tmx</code>). This keeps map IDs consistent and easy to type.
+        </div>
+
+        <div class="info-box">
+            When saving, make sure the tilesets use <strong>relative paths</strong>.
+            Since the map is in the <code>maps/</code> subfolder, tileset sources should reference
+            <code>../floors-brick.tsx</code> (one directory up). The Tiled project file handles this
+            automatically if you opened the project first.
+        </div>
+
+        <!-- ========================================
+             CREATING LAYERS
+             ======================================== -->
+        <h2>Creating Layers</h2>
+
+        <p>
+            A map needs at least a <code>Floor</code> layer and a <code>Walls</code> layer to be functional.
+            You can add more layers as needed for your map's features.
+        </p>
+
+        <p>To create a new layer:</p>
+        <ol>
+            <li>In the <strong>Layers</strong> panel, click the <strong>New Layer</strong> button (or right-click)</li>
+            <li>Choose <strong>Tile Layer</strong> for tile-based layers, or <strong>Object Layer</strong> for zone-based layers</li>
+            <li>Name the layer <strong>exactly</strong> as the engine expects (see the table below)</li>
+        </ol>
+
+        <img src="img/tiled-layers-panel.png" alt="The Layers panel showing a well-organized map with tile layers (Floor, Walls, Objects, Doors, Ceiling) and object layers (Warps, Spawns, Properties)" class="screenshot">
+
+        <div class="warning-box">
+            Layer names are <strong>case-sensitive</strong>. The layer must be named exactly <code>Floor</code>,
+            not <code>floor</code> or <code>FLOOR</code>. If the name does not match, the engine will not
+            recognize the layer.
+        </div>
+
+        <h3>Recommended Layer Order</h3>
+        <p>
+            While layer order does not affect how the game renders the map (the engine handles that),
+            organizing your layers consistently makes editing easier. Here is a recommended order from
+            top to bottom in the Layers panel:
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Layer Name</th>
+                    <th>Type</th>
+                    <th>Required?</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td><code>Properties</code></td><td>Object</td><td>Recommended</td></tr>
+                <tr><td>2</td><td><code>Warps</code></td><td>Object</td><td>If map has exits</td></tr>
+                <tr><td>3</td><td><code>Spawns</code></td><td>Object</td><td>If map has monsters</td></tr>
+                <tr><td>4</td><td><code>NM</code></td><td>Object</td><td>Optional</td></tr>
+                <tr><td>5</td><td><code>Locks</code></td><td>Object</td><td>If map has locked doors</td></tr>
+                <tr><td>6</td><td><code>TP</code></td><td>Object</td><td>If map has touchplates</td></tr>
+                <tr><td>7</td><td><code>Items</code></td><td>Object</td><td>Optional</td></tr>
+                <tr><td>8</td><td><code>Ceiling</code></td><td>Tile</td><td>Indoor maps</td></tr>
+                <tr><td>9</td><td><code>Roof</code> (tile)</td><td>Tile</td><td>If map has roofs</td></tr>
+                <tr><td>10</td><td><code>Roof</code> (object)</td><td>Object</td><td>If map has roofs</td></tr>
+                <tr><td>11</td><td><code>Objects</code></td><td>Tile</td><td>Optional</td></tr>
+                <tr><td>12</td><td><code>Walls2</code> (tile)</td><td>Tile</td><td>Optional</td></tr>
+                <tr><td>13</td><td><code>Walls2</code> (object)</td><td>Object</td><td>If Walls2 needs dir control</td></tr>
+                <tr><td>14</td><td><code>Doors</code></td><td>Tile</td><td>If map has doors</td></tr>
+                <tr><td>15</td><td><code>Walls</code></td><td>Tile</td><td><strong>Yes</strong></td></tr>
+                <tr><td>16</td><td><code>Floor2</code></td><td>Tile</td><td>Optional</td></tr>
+                <tr><td>17</td><td><code>Floor</code></td><td>Tile</td><td><strong>Yes</strong></td></tr>
+            </tbody>
+        </table>
+
+        <!-- ========================================
+             YOUR FIRST MAP
+             ======================================== -->
+        <h2>Building Your First Map</h2>
+
+        <p>Let's create a simple room to get started:</p>
+
+        <ol>
+            <li>Create a new map (16x16 tiles, 32x32 tile size)</li>
+            <li>Add the <code>Floor</code> tile layer</li>
+            <li>Add the <code>Walls</code> tile layer</li>
+            <li>Select the <code>Floor</code> layer and paint floor tiles to fill the interior</li>
+            <li>Select the <code>Walls</code> layer and paint wall tiles around the perimeter, leaving gaps for doorways</li>
+            <li>Add a <code>Properties</code> object layer and create an object with a <code>name</code> property for your map's display name</li>
+            <li>Save the file to both map directories</li>
+        </ol>
+
+        <img src="img/tiled-first-room.png" alt="A simple 16x16 room in Tiled with floor tiles filling the interior, wall tiles around the border, and gaps for doorways" class="screenshot">
+
+        <p>
+            In the next chapters, you will learn about each layer type in detail &mdash; what it does, what
+            properties it uses, and how the game engine interprets it.
+        </p>
+
+        <hr>
+
+        <div class="breadcrumb">
+            <a href="getting-started.html" class="prev">Getting Started</a>
+            <a href="tile-layers.html" class="next">Tile Layers</a>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>

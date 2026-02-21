@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tile Layers - Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="getting-started.html">Getting Started</a>
+            <a href="creating-a-map.html">Creating a Map</a>
+            <a href="tile-layers.html" class="active">Tile Layers</a>
+            <a href="object-layers.html">Object Layers</a>
+            <a href="map-properties.html">Map Properties</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="coordinate-reference.html">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="creating-a-map.html" class="prev">Creating a Map</a>
+            <a href="object-layers.html" class="next">Object Layers</a>
+        </div>
+
+        <h1>Tile Layers</h1>
+        <p class="subtitle">Tile layers are grid-based layers where you paint tiles. The game engine converts them into 3D geometry.</p>
+
+        <p>
+            Each tile you place on a tile layer becomes a piece of 3D geometry in the game world &mdash;
+            a floor quad, a wall cube, a billboard sprite, or a door. This chapter covers every tile layer
+            the engine recognizes.
+        </p>
+
+        <!-- ========================================
+             FLOOR
+             ======================================== -->
+        <div class="layer-card" id="floor">
+            <h3>Floor</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>Yes</strong></span>
+                <span>Tilesets: <strong>floors-*.tsx, terrain*.tsx</strong></span>
+            </div>
+
+            <p>
+                The <code>Floor</code> layer defines the base ground surface of your map. Every tile placed on
+                this layer is rendered as a flat horizontal quad at ground level (Y = 0) in the 3D world.
+            </p>
+
+            <h4>How It Works</h4>
+            <ul>
+                <li>Each tile becomes a 1x1 unit flat square on the ground</li>
+                <li>The tile's texture is mapped onto the quad</li>
+                <li>Empty cells (no tile) have no floor &mdash; players would see through to the void below</li>
+                <li>All floor tiles on the map are combined into a single optimized mesh for performance</li>
+            </ul>
+
+            <h4>Tips</h4>
+            <ul>
+                <li>Fill the entire walkable area with floor tiles &mdash; any gap will be a hole in the ground</li>
+                <li>You can use the Bucket Fill tool (<code>F</code>) to quickly fill large areas</li>
+                <li>Floor tiles do not block movement; they are purely visual</li>
+                <li>Mix tiles from different floor tilesets for variety (brick paths through grass, etc.)</li>
+            </ul>
+
+            <img src="img/layer-floor.png" alt="Tiled view showing the Floor layer painted with brick/stone tiles, covering the interior of a room" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             FLOOR2
+             ======================================== -->
+        <div class="layer-card" id="floor2">
+            <h3>Floor2</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>No</strong></span>
+                <span>Tilesets: <strong>floors-*.tsx, terrain*.tsx</strong></span>
+            </div>
+
+            <p>
+                The <code>Floor2</code> layer is an overlay that renders slightly above the base Floor layer.
+                Use it for decorative details that sit on top of the ground &mdash; carpets, rugs, path markings,
+                blood splatters, or decorative patterns.
+            </p>
+
+            <h4>How It Works</h4>
+            <ul>
+                <li>Rendered at Y = 0.001 (a tiny offset above the Floor layer)</li>
+                <li>This offset prevents z-fighting (flickering) between the two floor layers</li>
+                <li>Floor2 tiles support transparency &mdash; only the painted pixels show, the rest is see-through</li>
+                <li>Like Floor, all Floor2 tiles are combined into one optimized mesh</li>
+            </ul>
+
+            <h4>Tips</h4>
+            <ul>
+                <li>Only place tiles where you want the overlay &mdash; leave everything else empty</li>
+                <li>Great for adding visual interest without replacing the base floor</li>
+                <li>Use carpet tiles from <code>floors-carpets.tsx</code> for rug placement</li>
+            </ul>
+
+            <img src="img/layer-floor2.png" alt="Tiled view showing Floor2 layer with carpet/rug tiles overlaid on the base Floor layer, and the in-game result showing the carpet on the floor" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             WALLS
+             ======================================== -->
+        <div class="layer-card" id="walls">
+            <h3>Walls</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>Yes</strong></span>
+                <span>Tilesets: <strong>walls1.tsx &ndash; walls8.tsx</strong></span>
+            </div>
+
+            <p>
+                The <code>Walls</code> layer defines solid, blocking walls. Each wall tile is rendered as a
+                3D cube with four textured vertical faces (no top or bottom). Walls block player and monster movement.
+            </p>
+
+            <h4>How It Works</h4>
+            <ul>
+                <li>Each wall tile becomes a cube that extends from Y = -h to Y = +h (where h = wall height, default 1)</li>
+                <li>For the default height of 1, the cube spans 2 world units tall (from -1 to +1)</li>
+                <li>The tile's texture is applied to all four visible faces (north, south, east, west)</li>
+                <li>Walls are the primary collision layer &mdash; nothing can walk through a wall tile</li>
+                <li>Wall height can be overridden regionally using the <a href="advanced.html#wallheight">WallHeight</a> object layer</li>
+            </ul>
+
+            <h4>Layout Tips</h4>
+            <ul>
+                <li>Walls are placed on the same grid as floors. A tile is either a floor or a wall, not both.</li>
+                <li>Leave gaps in the wall perimeter for doorways (then place door tiles on the <code>Doors</code> layer)</li>
+                <li>Thick walls (multiple tiles wide) look more realistic than single-tile walls</li>
+                <li>The pathfinding system uses the Walls layer to determine walkable areas for monsters</li>
+            </ul>
+
+            <img src="img/layer-walls.png" alt="Tiled view showing the Walls layer with wall tiles forming room boundaries, with visible gaps for doorways" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             WALLS2
+             ======================================== -->
+        <div class="layer-card" id="walls2">
+            <h3>Walls2</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>No</strong></span>
+                <span>Tilesets: <strong>walls1.tsx &ndash; walls8.tsx, doodads*.tsx</strong></span>
+            </div>
+
+            <p>
+                The <code>Walls2</code> tile layer is an overlay for wall decorations and details. Tiles placed
+                on this layer are rendered on top of existing geometry &mdash; perfect for torches, sconces,
+                wall-mounted signs, shelves, or decorative trim. <strong>Walls2 tiles do not block movement.</strong>
+            </p>
+
+            <h4>How It Works</h4>
+            <ul>
+                <li>Rendered similarly to Walls but slightly inset (offset 0.01 toward the tile center) to layer over the base wall</li>
+                <li>By default, all four faces are rendered</li>
+                <li>You can control <strong>which faces are visible</strong> using the <code>Walls2</code> object layer (see <a href="advanced.html#walls2-dir">Advanced: Walls2 Direction</a>)</li>
+                <li>The tile height depends on the tileset sprite dimensions &mdash; taller sprites get taller faces</li>
+                <li>Uses alpha blending, so transparent areas of the tile texture are see-through</li>
+            </ul>
+
+            <h4>Tips</h4>
+            <ul>
+                <li>Place Walls2 tiles at the same position as a Walls tile to overlay the decoration</li>
+                <li>Use the Walls2 object layer to restrict rendering to just one face (e.g., only the east face for a wall-mounted torch)</li>
+                <li>Walls2 tiles do not block movement and are not used for collision</li>
+            </ul>
+
+            <img src="img/layer-walls2.png" alt="Tiled view showing Walls2 tile layer with torch/decoration tiles placed on wall positions, and the in-game result showing decorations on walls" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             OBJECTS
+             ======================================== -->
+        <div class="layer-card" id="objects">
+            <h3>Objects</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>No</strong></span>
+                <span>Tilesets: <strong>doodads*.tsx, plants*.tsx, outdoors*.tsx</strong></span>
+            </div>
+
+            <p>
+                The <code>Objects</code> layer is for placing billboard sprites &mdash; 2D images that are
+                rendered as vertical quads in the 3D world and always face the camera. Trees, barrels, furniture,
+                signs, crates, and other decorations all go on this layer.
+            </p>
+
+            <h4>How It Works</h4>
+            <ul>
+                <li>Each tile becomes a billboard sprite centered on the tile position</li>
+                <li>Billboards automatically rotate to face the camera as the player moves</li>
+                <li>Taller sprites (64px, 96px) are scaled proportionally in the 3D world</li>
+                <li>Sprites are rendered individually (not combined) since they need per-instance rotation</li>
+            </ul>
+
+            <h4>Special Tile Properties</h4>
+            <p>
+                Tiles on the Objects layer can have custom properties set on the <strong>tileset tile itself</strong>
+                (not per-instance). These properties add gameplay behavior to every instance of that tile:
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>radius</code></td>
+                        <td>float</td>
+                        <td>Creates a circular collision zone around the object. Players and monsters cannot walk through. Example: <code>0.3</code> for a barrel, <code>0.5</code> for a tree.</td>
+                    </tr>
+                    <tr>
+                        <td><code>fx</code></td>
+                        <td>int</td>
+                        <td>Particle effect ID to attach to this object (fire, smoke, sparkles).</td>
+                    </tr>
+                    <tr>
+                        <td><code>fx_ox</code>, <code>fx_oy</code>, <code>fx_oz</code></td>
+                        <td>float</td>
+                        <td>Position offsets for the particle effect, relative to the object center.</td>
+                    </tr>
+                    <tr>
+                        <td><code>fx_scale</code></td>
+                        <td>float</td>
+                        <td>Scale multiplier for the particle effect (default 1.0).</td>
+                    </tr>
+                    <tr>
+                        <td><code>light_intensity</code></td>
+                        <td>float</td>
+                        <td>Attaches a point light to this object. Controls brightness/range.</td>
+                    </tr>
+                    <tr>
+                        <td><code>light_color</code></td>
+                        <td>string</td>
+                        <td>Hex color for the light, e.g., <code>#FF8800</code> for warm orange.</td>
+                    </tr>
+                    <tr>
+                        <td><code>light_ox</code>, <code>light_oy</code>, <code>light_oz</code></td>
+                        <td>float</td>
+                        <td>Position offsets for the light source.</td>
+                    </tr>
+                    <tr>
+                        <td><code>light_flicker</code></td>
+                        <td>bool</td>
+                        <td>Enables a flickering effect (for torches, candles, campfires).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                These properties are set on the <strong>tileset tile definition</strong>, not on individual instances.
+                To set them, open the tileset in Tiled, select a tile, and add properties in the Properties panel.
+                Every instance of that tile will share those properties.
+            </div>
+
+            <img src="img/layer-objects.png" alt="Tiled view of the Objects layer with trees, barrels, and furniture placed, plus the in-game billboard rendering showing sprites facing the camera" class="screenshot">
+
+            <div class="warning-box">
+                If you make changes to tileset special tile properties (such as <code>radius</code>,
+                <code>fx</code>, or <code>light_*</code>), you must submit the modified tileset files
+                to Beebable for integration.
+            </div>
+        </div>
+
+        <!-- ========================================
+             DOORS
+             ======================================== -->
+        <div class="layer-card" id="doors">
+            <h3>Doors</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>No</strong></span>
+                <span>Tilesets: <strong>door.tsx, doodads2.tsx</strong></span>
+            </div>
+
+            <p>
+                The <code>Doors</code> layer is where you place door and gate tiles. These are special animated
+                tiles that open and close based on player proximity or lock conditions.
+            </p>
+
+            <h4>Door Types</h4>
+            <p>
+                There are two types of door tiles, distinguished by a boolean property on the tileset tile:
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tile Property</th>
+                        <th>Animation</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>DOOR</code> = true</td>
+                        <td>Swings open</td>
+                        <td>A swinging door that rotates around a hinge point. The hinge side is determined automatically by checking adjacent wall positions.</td>
+                    </tr>
+                    <tr>
+                        <td><code>GATE</code> = true</td>
+                        <td>Rises up</td>
+                        <td>A portcullis-style gate that slides vertically upward when opened.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>How Doors Work</h4>
+            <ul>
+                <li>Doors render as two textured faces (front and back)</li>
+                <li><strong>Proximity trigger:</strong> Unlocked doors open automatically when a player comes within 2 tiles</li>
+                <li><strong>Open animation:</strong> Takes 0.675 seconds to fully open or close</li>
+                <li><strong>Passable threshold:</strong> The door becomes walkable when it is 70% open</li>
+                <li>The engine detects the door's facing direction (north-south vs east-west) by checking adjacent walls</li>
+            </ul>
+
+            <h4>Locking Doors</h4>
+            <p>
+                Doors can be locked by covering them with a <code>Locks</code> object layer rectangle
+                (see <a href="object-layers.html#locks">Object Layers: Locks</a>). Locked doors do not respond
+                to proximity &mdash; they require a key, guild membership, or a touchplate to open.
+            </p>
+
+            <div class="tip-box">
+                Place door tiles in gaps between walls. The engine will look at adjacent walls to
+                determine which direction the door faces and where to put the hinge.
+            </div>
+
+            <h4>Gate Setup</h4>
+            <p>
+                Gates require a bit more work than swinging doors to look right. A gate tile on its own
+                will appear as a floating portcullis with no surrounding frame. To make gates look correct:
+            </p>
+            <ul>
+                <li>
+                    <strong>Add an archway tile on the Walls layer</strong> at the same position as the gate.
+                    The walls tilesets include archway tiles specifically designed for this &mdash; they frame
+                    the gate opening with a stone or brick arch. Without the archway, the gate will look
+                    out of place.
+                </li>
+                <li>
+                    <strong>Add the wall-top tile on the Walls2 layer</strong> at the same position if the
+                    wall height is 1 (the default). At height 1, the archway tile alone does not reach high
+                    enough to fully frame the gate. Place the wall-top cap tile (the tile showing just the
+                    top portion of the wall / battlements) on the <code>Walls2</code> layer at the gate
+                    position to complete the top of the frame.
+                </li>
+            </ul>
+
+            <div class="info-box">
+                At wall height 2 or higher, the archway tile on the Walls layer is typically tall enough
+                on its own, and the Walls2 cap tile is not needed.
+            </div>
+
+            <img src="img/layer-doors.png" alt="Tiled view showing door tiles placed in wall gaps on the Doors layer, and an in-game view showing doors both open and closed" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             CEILING
+             ======================================== -->
+        <div class="layer-card" id="ceiling">
+            <h3>Ceiling</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>No</strong></span>
+                <span>Tilesets: <strong>floors-*.tsx, nightsky.tsx</strong></span>
+            </div>
+
+            <p>
+                The <code>Ceiling</code> layer creates an overhead surface above the player. For indoor maps,
+                this gives the appearance of a ceiling. For outdoor maps, you might use sky tiles from
+                <code>nightsky.tsx</code>.
+            </p>
+
+            <h4>How It Works</h4>
+            <ul>
+                <li>Ceiling tiles are rendered as flat quads at Y = <code>height * 2</code></li>
+                <li>The <code>height</code> property is set on the <strong>layer itself</strong> (not on individual tiles)</li>
+                <li>Default height is 1 (ceiling at Y = 2), minimum is 1</li>
+                <li>For taller rooms (e.g., cathedral), set height to 2 or more</li>
+            </ul>
+
+            <h4>Setting the Ceiling Height</h4>
+            <ol>
+                <li>Select the <code>Ceiling</code> layer in the Layers panel</li>
+                <li>Look at the <strong>Properties</strong> panel (it should show layer properties)</li>
+                <li>Click the <strong>+</strong> button to add a custom property</li>
+                <li>Name it <code>height</code>, type <code>int</code>, and set the value</li>
+            </ol>
+
+            <div class="info-box">
+                When using the <a href="advanced.html#wallheight">WallHeight</a> object layer to make taller walls,
+                make sure the ceiling height is at least as tall as the wall height. Otherwise, walls will
+                poke through the ceiling.
+            </div>
+
+            <div class="tip-box">
+                The Ceiling layer can obscure the rest of your map while editing. Click the
+                <strong>eye icon</strong> next to the Ceiling layer in the Layers panel to toggle
+                its visibility. Hide it when working on other layers, and show it again when you
+                need to edit the ceiling.
+            </div>
+
+            <img src="img/layer-ceiling.png" alt="Tiled view showing the Ceiling layer with its height property visible in the Properties panel, set to 2" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             ROOF (tile layer)
+             ======================================== -->
+        <div class="layer-card" id="roof-tile">
+            <h3>Roof (Tile Layer)</h3>
+            <div class="layer-meta">
+                <span>Type: <strong>Tile Layer</strong></span>
+                <span>Required: <strong>No</strong></span>
+                <span>Tilesets: <strong>terrain2.tsx or similar</strong></span>
+            </div>
+
+            <p>
+                The <code>Roof</code> tile layer provides the texture for roof geometry. Paint tiles where
+                you want the roof surface to appear. The actual 3D roof shape (slope, angle, hip vs gable) is
+                defined by the <code>Roof</code> object layer (see <a href="advanced.html#roofs">Advanced: Roofs</a>).
+            </p>
+
+            <h4>How It Works</h4>
+            <ul>
+                <li>The tile texture is applied to the generated roof slope geometry</li>
+                <li>This layer alone does nothing &mdash; it must be paired with a Roof object layer</li>
+                <li>Paint tiles over the entire area covered by the roof region</li>
+            </ul>
+
+            <div class="tip-box">
+                The Roof system is covered in detail on the <a href="advanced.html#roofs">Advanced Topics</a> page,
+                since it involves coordinating both a tile layer and an object layer.
+            </div>
+        </div>
+
+        <hr>
+
+        <h2>Summary</h2>
+        <p>
+            Tile layers form the visual and physical foundation of your map. The <code>Floor</code> and
+            <code>Walls</code> layers are the minimum requirement. Add <code>Objects</code> for decoration,
+            <code>Doors</code> for interactive doorways, <code>Ceiling</code> for indoor areas, and
+            <code>Floor2</code> and <code>Walls2</code> for extra visual detail.
+        </p>
+        <p>
+            Next, we will cover <strong>object layers</strong> &mdash; the invisible zones that define
+            game logic like warps, monster spawns, and locked doors.
+        </p>
+
+        <div class="breadcrumb">
+            <a href="creating-a-map.html" class="prev">Creating a Map</a>
+            <a href="object-layers.html" class="next">Object Layers</a>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Topics - Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="getting-started.html">Getting Started</a>
+            <a href="creating-a-map.html">Creating a Map</a>
+            <a href="tile-layers.html">Tile Layers</a>
+            <a href="object-layers.html">Object Layers</a>
+            <a href="map-properties.html">Map Properties</a>
+            <a href="advanced.html" class="active">Advanced</a>
+            <a href="coordinate-reference.html">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="map-properties.html" class="prev">Map Properties</a>
+            <a href="coordinate-reference.html" class="next">Coordinates</a>
+        </div>
+
+        <h1>Advanced Topics</h1>
+        <p class="subtitle">Roofs, variable wall heights, point lights, particle effects, and directional wall overlays.</p>
+
+        <p>
+            This chapter covers advanced features that let you create more complex and visually rich maps.
+            These features all use object layers with custom properties to control geometry and effects that
+            go beyond simple tile painting.
+        </p>
+
+        <!-- ========================================
+             ROOFS
+             ======================================== -->
+        <div class="layer-card" id="roofs">
+            <h3>Roof System</h3>
+            <div class="layer-meta">
+                <span>Tile Layer: <strong>Roof</strong></span>
+                <span>Object Layer: <strong>Roof</strong></span>
+            </div>
+
+            <p>
+                The roof system uses <strong>two layers with the same name</strong> &mdash; a tile layer for
+                texture and an object layer for geometry. Together, they create sloped roof structures above
+                your buildings.
+            </p>
+
+            <h4>Step 1: Roof Tile Layer</h4>
+            <p>
+                Create a <strong>Tile Layer</strong> named <code>Roof</code>. Paint tiles from a roof-appropriate
+                tileset (e.g., <code>terrain2.tsx</code>) wherever the roof surface should appear. These tiles
+                provide the texture that will be mapped onto the sloped geometry.
+            </p>
+
+            <h4>Step 2: Roof Object Layer</h4>
+            <p>
+                Create an <strong>Object Layer</strong> also named <code>Roof</code>. Draw rectangles that
+                define the area each roof section covers. Each rectangle generates a 3D roof shape.
+            </p>
+
+            <h4>Roof Object Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>roof_dir</code></td>
+                        <td>string</td>
+                        <td>(auto)</td>
+                        <td>Ridge direction: <code>"ns"</code> (north-south) or <code>"ew"</code> (east-west). If not set, auto-detected from rectangle shape (wider = ew, taller = ns).</td>
+                    </tr>
+                    <tr>
+                        <td><code>roof_angle</code></td>
+                        <td>float</td>
+                        <td><code>45</code></td>
+                        <td>Slope angle in degrees. <code>45</code> gives a steep roof, lower values give a gentler slope.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hip</code></td>
+                        <td>bool</td>
+                        <td><code>false</code></td>
+                        <td>If <code>true</code>, creates a hip roof (slopes on all 4 sides). If <code>false</code>, creates a gable roof (slopes on 2 sides, with triangular walls on the ends).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>How Roof Geometry Works</h4>
+            <ul>
+                <li>The roof starts at the eaves, which sit at the top of the walls within the region (eaves Y = wall height * 2)</li>
+                <li>The ridge runs along the center of the rectangle in the specified direction</li>
+                <li>The peak height is calculated from the slope angle and the distance from edge to center</li>
+                <li><strong>Gable roofs</strong> have two sloped sides and flat triangular walls on the short ends</li>
+                <li><strong>Hip roofs</strong> have slopes on all four sides, meeting at a ridge (or a point, if square)</li>
+            </ul>
+
+            <img src="img/advanced-roofs.png" alt="Tiled view showing both Roof layers (tile layer with roof texture painted, object layer with region rectangle), and in-game view of the resulting hip and gable roofs" class="screenshot">
+
+            <div class="tip-box">
+                The roof object rectangle should cover the entire building footprint including walls. The engine
+                automatically samples wall heights within the region to determine where the eaves begin.
+            </div>
+        </div>
+
+        <!-- ========================================
+             WALL HEIGHT
+             ======================================== -->
+        <div class="layer-card" id="wallheight">
+            <h3>Variable Wall Heights</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>WallHeight</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                By default, all walls are 1 tile tall (spanning 2 world units from Y = -1 to Y = 1).
+                The <code>WallHeight</code> object layer lets you make walls taller in specific regions &mdash;
+                perfect for towers, cathedral walls, fortress battlements, or cliff faces.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>height</code></td>
+                        <td>int</td>
+                        <td><code>1</code></td>
+                        <td>Wall height in tiles. A height of 2 means walls span from Y = -2 to Y = 2 (4 world units tall).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>How to Use</h4>
+            <ol>
+                <li>Create a <code>WallHeight</code> object layer</li>
+                <li>Draw a rectangle over the area where you want taller walls</li>
+                <li>Set the <code>height</code> property to the desired value</li>
+            </ol>
+
+            <h4>Things to Keep in Mind</h4>
+            <ul>
+                <li>Only affects <code>Walls</code> layer tiles within the rectangle</li>
+                <li>The wall texture tiles vertically with the height increase</li>
+                <li>If you increase wall height, you should also increase the <code>Ceiling</code> layer height to match (otherwise walls poke through the ceiling)</li>
+                <li>Roof eave heights are based on wall heights, so roofs automatically adjust to taller walls</li>
+            </ul>
+
+            <img src="img/advanced-wallheight.png" alt="WallHeight object layer showing a rectangle with height=2 over a section of walls, and the in-game result showing taller walls in that area" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             LIGHTS
+             ======================================== -->
+        <div class="layer-card" id="lights">
+            <h3>Point Lights</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Lights</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                The <code>Lights</code> object layer lets you place point light sources that illuminate
+                surrounding walls, floors, and objects. Lights are essential for indoor and dungeon maps
+                where the ambient light is low.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>intensity</code></td>
+                        <td>float</td>
+                        <td><code>5.0</code></td>
+                        <td>Light brightness and range. Higher values illuminate a larger area.</td>
+                    </tr>
+                    <tr>
+                        <td><code>color</code></td>
+                        <td>string</td>
+                        <td><code>#FFFFFF</code></td>
+                        <td>Hex color of the light. Examples: <code>#FF8800</code> (warm orange), <code>#4488FF</code> (cool blue).</td>
+                    </tr>
+                    <tr>
+                        <td><code>ox</code>, <code>oy</code>, <code>oz</code></td>
+                        <td>float</td>
+                        <td><code>0</code></td>
+                        <td>Position offset from the object's center, in world units. <code>oy</code> offsets vertically (default Y position is 1.0).</td>
+                    </tr>
+                    <tr>
+                        <td><code>flicker</code></td>
+                        <td>bool</td>
+                        <td><code>false</code></td>
+                        <td>Enables a flickering animation, simulating fire-based lighting (torches, candles, campfires).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Lights on Objects</h4>
+            <p>
+                In addition to the <code>Lights</code> object layer, you can attach lights directly to tiles on
+                the <code>Objects</code> tile layer using tile properties (<code>light_intensity</code>,
+                <code>light_color</code>, etc.). This is useful for tiles that inherently emit light &mdash;
+                like a torch sprite that automatically comes with a warm, flickering light.
+            </p>
+            <p>See <a href="tile-layers.html#objects">Tile Layers: Objects</a> for the tile property names.</p>
+
+            <img src="img/advanced-lights.png" alt="Lights object layer in Tiled with light point objects, and the in-game result showing warm torch lighting on dungeon walls" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             FX / PARTICLE EFFECTS
+             ======================================== -->
+        <div class="layer-card" id="fx">
+            <h3>Particle Effects (FX)</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>FX</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                The <code>FX</code> object layer places particle effects on the map &mdash; fire, smoke,
+                magical sparkles, steam, and other animated visual effects.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>fx</code></td>
+                        <td>int</td>
+                        <td>(required)</td>
+                        <td>Particle effect ID. Must match an effect defined in the game's particle effect system.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ox</code>, <code>oy</code>, <code>oz</code></td>
+                        <td>float</td>
+                        <td><code>0</code></td>
+                        <td>Position offset from the object center, in world units.</td>
+                    </tr>
+                    <tr>
+                        <td><code>scale</code></td>
+                        <td>float</td>
+                        <td><code>1.0</code></td>
+                        <td>Scale multiplier for the effect. <code>2.0</code> = double size, <code>0.5</code> = half size.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>FX on Objects</h4>
+            <p>
+                Like lights, particle effects can also be attached to <code>Objects</code> tile layer tiles
+                using tile properties (<code>fx</code>, <code>fx_ox</code>, <code>fx_oy</code>, <code>fx_oz</code>,
+                <code>fx_scale</code>). This is ideal for objects that always have an effect &mdash; like a
+                campfire tile that automatically spawns fire particles.
+            </p>
+
+            <img src="img/advanced-fx.png" alt="FX object layer in Tiled with effect placements, and the in-game result showing fire/smoke particles at those locations" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             WALLS2 DIRECTION CONTROL
+             ======================================== -->
+        <div class="layer-card" id="walls2-dir">
+            <h3>Walls2 Direction Control</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Walls2</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                The <code>Walls2</code> <strong>object layer</strong> (distinct from the <code>Walls2</code> tile layer)
+                controls which faces of Walls2 tiles are visible. By default, all four faces (north, south, east, west)
+                are rendered. This layer lets you restrict rendering to specific faces.
+            </p>
+
+            <h4>Why Is This Useful?</h4>
+            <p>
+                Consider a wall-mounted torch. If all four faces are rendered, you would see the torch texture
+                on every side of the tile &mdash; including the side facing into the wall, which is invisible
+                and wastes rendering effort. By restricting to just the face pointing <em>away</em> from the wall,
+                the decoration looks correct.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>dir</code></td>
+                        <td>string</td>
+                        <td>All faces</td>
+                        <td>
+                            Comma-separated list of faces to render. Values:
+                            <code>n</code> (north), <code>s</code> (south), <code>e</code> (east), <code>w</code> (west).
+                            Example: <code>e</code> renders only the east face. <code>n,s</code> renders north and south.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Direction Bitmask</h4>
+            <p>Internally, the engine converts the <code>dir</code> string to a bitmask:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Direction</th>
+                        <th>Bit</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>North (<code>n</code>)</td><td>0</td><td>1</td></tr>
+                    <tr><td>South (<code>s</code>)</td><td>1</td><td>2</td></tr>
+                    <tr><td>East (<code>e</code>)</td><td>2</td><td>4</td></tr>
+                    <tr><td>West (<code>w</code>)</td><td>3</td><td>8</td></tr>
+                </tbody>
+            </table>
+            <p>Default (no Walls2 object layer): all faces = <code>0xF</code> (15).</p>
+
+            <h4>How to Use</h4>
+            <ol>
+                <li>Place decoration tiles on the <code>Walls2</code> tile layer</li>
+                <li>Create a <code>Walls2</code> object layer</li>
+                <li>Draw a rectangle over the tiles you want to control</li>
+                <li>Set the <code>dir</code> property to the faces that should be visible</li>
+            </ol>
+
+            <div class="tip-box">
+                If a torch is mounted on the north face of a wall (the wall is to the north, the player sees
+                the south face of the tile), set <code>dir</code> to <code>s</code> so only the south-facing
+                side of the decoration is rendered.
+            </div>
+
+            <img src="img/advanced-walls2-dir.png" alt="Walls2 object layer in Tiled with a rectangle and dir=e property, alongside the Walls2 tile layer showing torch decorations, and the in-game result showing torches only on the east-facing wall" class="screenshot">
+        </div>
+
+        <hr>
+
+        <h2>Summary</h2>
+        <p>
+            Advanced features let you create much more detailed and atmospheric maps. Roofs give buildings
+            proper 3D roof structures. WallHeight creates imposing towers and tall structures. Lights and
+            FX bring the world to life with illumination and particle effects. And Walls2 direction control
+            ensures wall decorations render correctly.
+        </p>
+        <p>
+            Finally, the <a href="coordinate-reference.html">Coordinate Reference</a> page explains how
+            Tiled's 2D coordinates translate to the game's 3D world &mdash; essential knowledge for
+            debugging warps, spawns, and other coordinate-dependent features.
+        </p>
+
+        <div class="breadcrumb">
+            <a href="map-properties.html" class="prev">Map Properties</a>
+            <a href="coordinate-reference.html" class="next">Coordinates</a>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>

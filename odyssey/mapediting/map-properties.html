@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Properties - Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="getting-started.html">Getting Started</a>
+            <a href="creating-a-map.html">Creating a Map</a>
+            <a href="tile-layers.html">Tile Layers</a>
+            <a href="object-layers.html">Object Layers</a>
+            <a href="map-properties.html" class="active">Map Properties</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="coordinate-reference.html">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="object-layers.html" class="prev">Object Layers</a>
+            <a href="advanced.html" class="next">Advanced</a>
+        </div>
+
+        <h1>Map Properties</h1>
+        <p class="subtitle">Configure map-wide settings like PvP mode, lighting, and music using the Properties object layer.</p>
+
+        <!-- ========================================
+             THE PROPERTIES LAYER
+             ======================================== -->
+        <h2>The Properties Layer</h2>
+
+        <p>
+            Map-wide settings are defined through a special object layer called <code>Properties</code>.
+            This is <strong>not</strong> the same as Tiled's built-in "Map Properties" &mdash; it is a custom
+            object layer that the Odyssey engine reads at load time.
+        </p>
+
+        <h3>How to Set Up</h3>
+        <ol>
+            <li>Create a new <strong>Object Layer</strong> named exactly <code>Properties</code></li>
+            <li>Draw a single rectangle object anywhere on the map (its position and size do not matter)</li>
+            <li>Select the rectangle and add custom properties in the Properties panel</li>
+        </ol>
+
+        <div class="info-box">
+            Only one object is needed on the Properties layer. The engine reads properties from the first
+            object it finds. The rectangle's position and size are irrelevant &mdash; you can place it
+            off to the side or in a corner so it does not clutter your view.
+        </div>
+
+        <img src="img/layer-properties.png" alt="A Properties object selected in Tiled showing all custom properties (name, indoors, pk, ambient, etc.) in the Properties panel on the left" class="screenshot">
+
+        <!-- ========================================
+             PROPERTY REFERENCE
+             ======================================== -->
+        <h2>Property Reference</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>name</code></td>
+                    <td>string</td>
+                    <td>(map filename)</td>
+                    <td>The display name shown to players. If not set, the map filename is used. Example: <code>Orc Stronghold</code></td>
+                </tr>
+                <tr>
+                    <td><code>indoors</code></td>
+                    <td>bool</td>
+                    <td><code>false</code></td>
+                    <td>Marks the map as indoor. Indoor maps have no sky rendering and use a different default ambient light level.</td>
+                </tr>
+                <tr>
+                    <td><code>pk</code></td>
+                    <td>bool</td>
+                    <td><code>false</code></td>
+                    <td>Enables free-for-all player-vs-player combat. All players can attack each other.</td>
+                </tr>
+                <tr>
+                    <td><code>friendly</code></td>
+                    <td>bool</td>
+                    <td><code>false</code></td>
+                    <td>Disables all PvP combat. Players cannot attack each other regardless of guild membership.</td>
+                </tr>
+                <tr>
+                    <td><code>cantattackmonsters</code></td>
+                    <td>bool</td>
+                    <td><code>false</code></td>
+                    <td>Prevents players from attacking monsters on this map. Useful for peaceful town areas with cosmetic creatures.</td>
+                </tr>
+                <tr>
+                    <td><code>ambient</code></td>
+                    <td>float</td>
+                    <td><code>-1</code></td>
+                    <td>Overrides the ambient light level. <code>0.0</code> = pitch black, <code>1.0</code> = fully bright. <code>-1</code> uses the engine default.</td>
+                </tr>
+                <tr>
+                    <td><code>foggy</code></td>
+                    <td>bool</td>
+                    <td><code>false</code></td>
+                    <td>Enables a fog effect on the map, reducing visibility at distance.</td>
+                </tr>
+                <tr>
+                    <td><code>music</code></td>
+                    <td>int</td>
+                    <td><code>-1</code></td>
+                    <td>Background music track number (1&ndash;20). <code>-1</code> = no music.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ========================================
+             PVP MODES
+             ======================================== -->
+        <h2>PvP Combat Modes</h2>
+
+        <p>
+            The combination of <code>pk</code> and <code>friendly</code> determines the map's combat rules.
+            There are three distinct modes:
+        </p>
+
+        <div class="layer-card">
+            <h3>Default Mode</h3>
+            <div class="layer-meta">
+                <span><code>pk = false</code></span>
+                <span><code>friendly = false</code></span>
+            </div>
+            <p>
+                <strong>Guild combat mode.</strong> Players who belong to different guilds can attack each other.
+                Unguilded players cannot be attacked and cannot attack others. This is the standard mode for
+                most of the game world.
+            </p>
+        </div>
+
+        <div class="layer-card">
+            <h3>PK Mode</h3>
+            <div class="layer-meta">
+                <span><code>pk = true</code></span>
+            </div>
+            <p>
+                <strong>Free-for-all PvP.</strong> All players can attack each other regardless of guild membership.
+                Killing another player in PK mode may flag the killer as a <strong>murderer</strong>, which has
+                in-game consequences (guards will attack on sight, name appears red to other players).
+            </p>
+        </div>
+
+        <div class="layer-card">
+            <h3>Friendly Mode</h3>
+            <div class="layer-meta">
+                <span><code>friendly = true</code></span>
+            </div>
+            <p>
+                <strong>No PvP at all.</strong> Players cannot attack each other under any circumstances.
+                Use this for safe towns, social areas, or tutorial zones. The <code>friendly</code> flag
+                overrides <code>pk</code> if both are set to true.
+            </p>
+        </div>
+
+        <!-- ========================================
+             LIGHTING
+             ======================================== -->
+        <h2>Lighting Settings</h2>
+
+        <p>
+            The <code>indoors</code> and <code>ambient</code> properties work together to control how
+            the map is lit:
+        </p>
+
+        <ul>
+            <li>
+                <strong>Outdoor maps</strong> (<code>indoors = false</code>): The map uses the game's
+                day/night cycle for ambient lighting. The <code>ambient</code> property is ignored.
+            </li>
+            <li>
+                <strong>Indoor maps</strong> (<code>indoors = true</code>): No sky is rendered. The
+                <code>ambient</code> property controls the base light level. Set it to <code>0</code>
+                for a dark dungeon (relying on point lights and torches), or higher for a well-lit interior.
+            </li>
+        </ul>
+
+        <!-- ========================================
+             EXAMPLE
+             ======================================== -->
+        <h2>Example: TMX Markup</h2>
+
+        <p>Here is what a Properties layer looks like in the raw TMX file:</p>
+
+        <div class="code-block">
+<code><span class="tag">&lt;objectgroup</span> <span class="attr">id</span>=<span class="val">"10"</span> <span class="attr">name</span>=<span class="val">"Properties"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;object</span> <span class="attr">id</span>=<span class="val">"13"</span> <span class="attr">x</span>=<span class="val">"0"</span> <span class="attr">y</span>=<span class="val">"0"</span> <span class="attr">width</span>=<span class="val">"32"</span> <span class="attr">height</span>=<span class="val">"32"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;properties&gt;</span>
+      <span class="tag">&lt;property</span> <span class="attr">name</span>=<span class="val">"name"</span> <span class="attr">value</span>=<span class="val">"Orc Stronghold"</span><span class="tag">/&gt;</span>
+      <span class="tag">&lt;property</span> <span class="attr">name</span>=<span class="val">"indoors"</span> <span class="attr">type</span>=<span class="val">"bool"</span> <span class="attr">value</span>=<span class="val">"true"</span><span class="tag">/&gt;</span>
+      <span class="tag">&lt;property</span> <span class="attr">name</span>=<span class="val">"ambient"</span> <span class="attr">type</span>=<span class="val">"float"</span> <span class="attr">value</span>=<span class="val">"0"</span><span class="tag">/&gt;</span>
+      <span class="tag">&lt;property</span> <span class="attr">name</span>=<span class="val">"friendly"</span> <span class="attr">type</span>=<span class="val">"bool"</span> <span class="attr">value</span>=<span class="val">"true"</span><span class="tag">/&gt;</span>
+      <span class="tag">&lt;property</span> <span class="attr">name</span>=<span class="val">"cantattackmonsters"</span> <span class="attr">type</span>=<span class="val">"bool"</span> <span class="attr">value</span>=<span class="val">"true"</span><span class="tag">/&gt;</span>
+      <span class="tag">&lt;property</span> <span class="attr">name</span>=<span class="val">"music"</span> <span class="attr">type</span>=<span class="val">"int"</span> <span class="attr">value</span>=<span class="val">"3"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;/properties&gt;</span>
+  <span class="tag">&lt;/object&gt;</span>
+<span class="tag">&lt;/objectgroup&gt;</span></code>
+        </div>
+
+        <p>
+            You do not need to edit the XML directly &mdash; Tiled handles this when you set properties
+            through the GUI. This is shown here for reference.
+        </p>
+
+        <hr>
+
+        <div class="breadcrumb">
+            <a href="object-layers.html" class="prev">Object Layers</a>
+            <a href="advanced.html" class="next">Advanced</a>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>

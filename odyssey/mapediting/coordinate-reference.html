@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinate Reference - Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="getting-started.html">Getting Started</a>
+            <a href="creating-a-map.html">Creating a Map</a>
+            <a href="tile-layers.html">Tile Layers</a>
+            <a href="object-layers.html">Object Layers</a>
+            <a href="map-properties.html">Map Properties</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="coordinate-reference.html" class="active">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="advanced.html" class="prev">Advanced</a>
+            <span></span>
+        </div>
+
+        <h1>Coordinate Reference</h1>
+        <p class="subtitle">How Tiled's 2D coordinates translate to the game's 3D world.</p>
+
+        <p>
+            Understanding coordinate systems is essential for debugging warps, spawns, touchplates, and
+            other features that reference specific positions. Tiled uses a 2D grid, while Odyssey renders
+            a 3D world &mdash; this page explains how they relate.
+        </p>
+
+        <!-- ========================================
+             TILED COORDINATE SYSTEM
+             ======================================== -->
+        <h2>Tiled's Coordinate System</h2>
+
+        <p>In Tiled, the map is a 2D grid:</p>
+
+        <ul>
+            <li><strong>X</strong> increases left to right (columns)</li>
+            <li><strong>Y</strong> increases top to bottom (rows)</li>
+            <li>The <strong>origin (0, 0)</strong> is at the top-left corner</li>
+            <li>Tile coordinates are integers: column 0, 1, 2... and row 0, 1, 2...</li>
+            <li>Pixel coordinates = tile coordinate &times; 32 (since tile size is 32px)</li>
+        </ul>
+
+        <div class="ascii-diagram">
+          Tiled Coordinate System
+
+          (0,0)  (1,0)  (2,0)  (3,0)   ... X increases &rarr;
+          (0,1)  (1,1)  (2,1)  (3,1)
+          (0,2)  (1,2)  (2,2)  (3,2)
+          (0,3)  (1,3)  (2,3)  (3,3)
+            |
+            Y increases &darr;
+        </div>
+
+        <img src="img/coords-tiled-system.png" alt="Tiled map view with the coordinate display visible in the status bar, showing the mouse position as tile X,Y coordinates, with origin labeled at top-left" class="screenshot">
+
+        <!-- ========================================
+             GAME WORLD COORDINATE SYSTEM
+             ======================================== -->
+        <h2>Game World Coordinate System</h2>
+
+        <p>Odyssey uses libGDX's 3D coordinate system:</p>
+
+        <ul>
+            <li><strong>X</strong> increases eastward (same direction as Tiled X &mdash; left to right)</li>
+            <li><strong>Y</strong> increases upward (vertical height &mdash; no equivalent in Tiled)</li>
+            <li><strong>Z</strong> increases southward (opposite direction to Tiled's screen space)</li>
+        </ul>
+
+        <div class="ascii-diagram">
+          Game World Coordinate System (3D)
+
+                Y (up)
+                |
+                |
+                |_______ X (east / right)
+               /
+              /
+             Z (south / into screen)
+
+          Floor is at Y = 0
+          Walls extend from Y = -height to Y = +height
+          Ceiling is at Y = ceilingHeight &times; 2
+        </div>
+
+        <p>
+            The key relationship: <strong>Tiled's Y axis maps to the game's Z axis</strong>, but the
+            conversion depends on whether you are working with tile layers or object layers.
+        </p>
+
+        <!-- ========================================
+             TILE LAYER COORDINATES
+             ======================================== -->
+        <h2>Tile Layer Coordinate Conversion</h2>
+
+        <p>
+            When libGDX loads a TMX file, it automatically flips tile layer data so that row 0 is at the
+            <strong>bottom</strong> (not the top, as in Tiled). This means a tile at Tiled position (x, y)
+            ends up at libGDX tile position (x, mapHeight - 1 - y).
+        </p>
+
+        <p>To convert a Tiled tile position to a 3D world position:</p>
+
+        <div class="code-block">
+<code><span class="comment">// Tiled tile coordinates -&gt; 3D world position</span>
+worldX = tiledX + 0.5     <span class="comment">// Center of tile</span>
+worldY = 0                <span class="comment">// Ground level (for floor)</span>
+worldZ = (mapHeight - 1 - tiledY) + 0.5  <span class="comment">// Flip Y, center of tile</span></code>
+        </div>
+
+        <p>
+            The <code>+ 0.5</code> centers the position within the tile (each tile is 1 world unit wide).
+        </p>
+
+        <div class="info-box">
+            This flip is why doors use flipped Y internally. When you reference door positions
+            (e.g., in touchplates), you use Tiled coordinates and the engine handles the conversion.
+        </div>
+
+        <!-- ========================================
+             OBJECT LAYER COORDINATES
+             ======================================== -->
+        <h2>Object Layer Coordinate Conversion</h2>
+
+        <p>
+            Object layers are parsed differently from tile layers. The engine reads the raw XML pixel
+            coordinates and converts them directly to world coordinates <strong>without flipping Y</strong>:
+        </p>
+
+        <div class="code-block">
+<code><span class="comment">// Object layer pixel coordinates -&gt; world position</span>
+worldX = pixelX / 32      <span class="comment">// Divide by tile width</span>
+worldZ = pixelY / 32      <span class="comment">// Divide by tile height (no flip!)</span>
+worldWidth  = pixelWidth / 32
+worldHeight = pixelHeight / 32</code>
+        </div>
+
+        <p>
+            This means that for object layers (Warps, Spawns, NM, Keep, TP zones, etc.), a rectangle
+            drawn at Tiled position maps directly to the same relative position in the game world.
+            You do not need to think about Y-flipping when drawing object layer zones.
+        </p>
+
+        <!-- ========================================
+             LAYER-SPECIFIC COORDINATE NOTES
+             ======================================== -->
+        <h2>Layer-Specific Coordinate Notes</h2>
+
+        <h3>Warp Target Coordinates</h3>
+        <p>
+            Warp <code>x</code> and <code>y</code> properties specify the target tile position using the
+            same coordinates you see in Tiled. The player will appear at the center of that tile on the
+            destination map.
+        </p>
+
+        <h3>Touchplate Door Coordinates</h3>
+        <p>
+            Touchplate <code>x</code> and <code>y</code> properties also use Tiled coordinates. Hover over
+            the target door tile in Tiled and read the coordinates from the status bar. The engine internally
+            flips the Y to match the door's stored position.
+        </p>
+
+        <h3>Bootmap Target Coordinates</h3>
+        <p>
+            Same as warps &mdash; the <code>x</code> and <code>y</code> properties use Tiled coordinates
+            for the destination position on the target map.
+        </p>
+
+        <!-- ========================================
+             Y POSITION REFERENCE
+             ======================================== -->
+        <h2>Vertical (Y) Position Reference</h2>
+
+        <p>
+            The vertical axis (Y) is determined by the layer type and configuration:
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>Y Position</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Floor</td>
+                    <td><code>0</code></td>
+                    <td>Base ground level</td>
+                </tr>
+                <tr>
+                    <td>Floor2</td>
+                    <td><code>0.001</code></td>
+                    <td>Slightly above floor to prevent z-fighting</td>
+                </tr>
+                <tr>
+                    <td>Wall base</td>
+                    <td><code>-height</code></td>
+                    <td>Default height=1, so base is at -1</td>
+                </tr>
+                <tr>
+                    <td>Wall top</td>
+                    <td><code>+height</code></td>
+                    <td>Default height=1, so top is at +1</td>
+                </tr>
+                <tr>
+                    <td>Point lights</td>
+                    <td><code>1.0 + oy</code></td>
+                    <td>Default Y = 1.0 (middle of a standard wall), adjustable via oy offset</td>
+                </tr>
+                <tr>
+                    <td>Ceiling</td>
+                    <td><code>ceilingHeight &times; 2</code></td>
+                    <td>Default ceilingHeight=1, so ceiling is at Y=2</td>
+                </tr>
+                <tr>
+                    <td>Roof eaves</td>
+                    <td><code>wallHeight &times; 2</code></td>
+                    <td>Eaves start at the top of the walls</td>
+                </tr>
+                <tr>
+                    <td>Roof peak</td>
+                    <td><code>eaves + roofHeight &times; 2</code></td>
+                    <td>Depends on roof_angle and roof width</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ========================================
+             COMPLETE CONVERSION TABLE
+             ======================================== -->
+        <h2>Quick Conversion Reference</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Formula</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tiled tile (x, y)</td>
+                    <td>World (X, Z)</td>
+                    <td><code>X = x + 0.5</code>, <code>Z = (mapHeight - 1 - y) + 0.5</code></td>
+                </tr>
+                <tr>
+                    <td>Object pixel (px, py)</td>
+                    <td>World (X, Z)</td>
+                    <td><code>X = px / 32</code>, <code>Z = py / 32</code></td>
+                </tr>
+                <tr>
+                    <td>World (X, Z)</td>
+                    <td>Tiled tile (x, y)</td>
+                    <td><code>x = floor(X)</code>, <code>y = mapHeight - 1 - floor(Z)</code></td>
+                </tr>
+                <tr>
+                    <td>Tiled tile Y</td>
+                    <td>libGDX tile Y</td>
+                    <td><code>libgdxY = mapHeight - 1 - tiledY</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ========================================
+             VISUAL EXAMPLE
+             ======================================== -->
+        <h2>Visual Example</h2>
+
+        <p>
+            Consider a 4x4 map. Here is how Tiled coordinates map to the game world:
+        </p>
+
+        <div class="ascii-diagram">
+<span class="highlight">Tiled (top-down):</span>              <span class="accent">Game World (3D top-down view):</span>
+
+  (0,0) (1,0) (2,0) (3,0)       (0.5,3.5) (1.5,3.5) (2.5,3.5) (3.5,3.5)
+  (0,1) (1,1) (2,1) (3,1)       (0.5,2.5) (1.5,2.5) (2.5,2.5) (3.5,2.5)
+  (0,2) (1,2) (2,2) (3,2)       (0.5,1.5) (1.5,1.5) (2.5,1.5) (3.5,1.5)
+  (0,3) (1,3) (2,3) (3,3)       (0.5,0.5) (1.5,0.5) (2.5,0.5) (3.5,0.5)
+
+  Y increases downward            Z increases downward (but rows are flipped)
+  Tiled (0,0) = top-left          World (0.5, 3.5) = top-left visually
+  Tiled (0,3) = bottom-left       World (0.5, 0.5) = bottom-left visually
+        </div>
+
+        <p>
+            Notice how Tiled's row 0 (top) corresponds to the highest Z value in the world,
+            and Tiled's bottom row corresponds to the lowest Z value. The X axis is unchanged.
+        </p>
+
+        <img src="img/coords-visual-comparison.png" alt="Side-by-side: Tiled map view with tile coordinates labeled, next to the in-game 3D view of the same map with world coordinates labeled" class="screenshot">
+
+        <hr>
+
+        <h2>Practical Tips</h2>
+
+        <ul>
+            <li>
+                <strong>For warps and bootmaps:</strong> The x,y properties use the same system as Tiled.
+                Hover your mouse over the target tile in Tiled and read the coordinates from the status bar.
+            </li>
+            <li>
+                <strong>For touchplates:</strong> Same as above &mdash; hover over the door tile and use those coordinates.
+            </li>
+            <li>
+                <strong>For object layer zones:</strong> Just draw the rectangle where you want it in Tiled.
+                The coordinate conversion is automatic.
+            </li>
+            <li>
+                <strong>When debugging:</strong> If something appears in the wrong position, check whether
+                the Y coordinate needs to be interpreted as Tiled (top-down) or world (bottom-up). The
+                server log outputs both coordinate systems for most layers.
+            </li>
+        </ul>
+
+        <div class="breadcrumb">
+            <a href="advanced.html" class="prev">Advanced</a>
+            <span></span>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>

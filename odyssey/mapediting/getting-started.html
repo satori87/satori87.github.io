@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started - Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="getting-started.html" class="active">Getting Started</a>
+            <a href="creating-a-map.html">Creating a Map</a>
+            <a href="tile-layers.html">Tile Layers</a>
+            <a href="object-layers.html">Object Layers</a>
+            <a href="map-properties.html">Map Properties</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="coordinate-reference.html">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="index.html" class="prev">Home</a>
+            <a href="creating-a-map.html" class="next">Creating a Map</a>
+        </div>
+
+        <h1>Getting Started</h1>
+        <p class="subtitle">Install Tiled and learn the basics of the editor interface.</p>
+
+        <!-- ========================================
+             DOWNLOADING TILED
+             ======================================== -->
+        <h2>Downloading Tiled</h2>
+
+        <p>
+            Tiled is a free, open-source 2D map editor. It runs on Windows, macOS, and Linux. Odyssey uses
+            <strong>Tiled version 1.11.x</strong>, though newer versions should also be compatible.
+        </p>
+
+        <ol>
+            <li>Visit <a href="https://www.mapeditor.org/" target="_blank">mapeditor.org</a></li>
+            <li>Click the download link for your operating system</li>
+            <li>Install the application using the default settings</li>
+        </ol>
+
+        <div class="tip-box">
+            Tiled is free to download from the website or from GitHub. The version on
+            <a href="https://store.steampowered.com/app/2218170/Tiled/" target="_blank">Steam</a>
+            and <a href="https://thorbjorn.itch.io/tiled" target="_blank">itch.io</a>
+            supports the developer through optional purchases.
+        </div>
+
+        <img src="img/tiled-download-page.png" alt="The Tiled download page at mapeditor.org showing platform options" class="screenshot">
+
+        <!-- ========================================
+             THE TILED INTERFACE
+             ======================================== -->
+        <h2>The Tiled Interface</h2>
+
+        <p>
+            When you open a map file in Tiled, you will see several panels. Understanding these panels is essential
+            for map making. Here is what each one does:
+        </p>
+
+        <img src="img/tiled-interface-labeled.png" alt="The Tiled editor interface with all major panels labeled: Map View (center), Layers panel (top-right), Tilesets panel (bottom-right), Properties panel (left)" class="screenshot">
+
+        <h3>Map View (Center)</h3>
+        <p>
+            The large center area is where you view and edit your map. You can zoom in and out with the scroll wheel,
+            and pan by holding the middle mouse button (or spacebar + left click). The grid overlay shows tile boundaries.
+        </p>
+        <ul>
+            <li><strong>Zoom:</strong> Scroll wheel, or <code>Ctrl +</code> / <code>Ctrl -</code></li>
+            <li><strong>Pan:</strong> Middle-click drag, or <code>Space</code> + left-click drag</li>
+            <li><strong>Grid toggle:</strong> <code>Ctrl + G</code></li>
+        </ul>
+
+        <h3>Layers Panel (Top-Right)</h3>
+        <p>
+            This panel lists all layers in your map. Layers come in two types:
+        </p>
+        <ul>
+            <li><strong>Tile Layers</strong> &mdash; Grid-based layers where you paint tiles (Floor, Walls, Objects, etc.)</li>
+            <li><strong>Object Layers</strong> &mdash; Layers where you draw rectangles and shapes (Warps, Spawns, Locks, etc.)</li>
+        </ul>
+        <p>
+            You must select a layer before you can edit it. The currently selected layer is highlighted.
+            Use the eye icon to toggle visibility, and the lock icon to prevent accidental edits.
+        </p>
+
+        <h3>Tilesets Panel (Bottom-Right)</h3>
+        <p>
+            This panel shows the available tilesets. Each tileset is a collection of tiles (small images) that you
+            can paint onto tile layers. Click a tile in the tileset panel to select it, then click on the map to place it.
+        </p>
+        <ul>
+            <li><strong>Select a tile:</strong> Left-click a tile in the tileset</li>
+            <li><strong>Select multiple tiles:</strong> Click and drag a rectangle in the tileset</li>
+            <li><strong>View tile properties:</strong> Right-click a tile in the tileset</li>
+        </ul>
+
+        <h3>Properties Panel (Left)</h3>
+        <p>
+            This panel shows the properties of whatever is currently selected &mdash; a tile, an object, a layer,
+            or the map itself. Custom properties are where you configure game-specific settings (like setting a door's
+            lock type, a spawn's monster ID, or a map's display name).
+        </p>
+
+        <!-- ========================================
+             THE TOOLBAR
+             ======================================== -->
+        <h2>Essential Tools</h2>
+
+        <p>The toolbar at the top provides the tools you will use most often:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Tool</th>
+                    <th>Shortcut</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Stamp Brush</strong></td>
+                    <td><code>B</code></td>
+                    <td>Paint tiles onto a tile layer. The primary painting tool.</td>
+                </tr>
+                <tr>
+                    <td><strong>Eraser</strong></td>
+                    <td><code>E</code></td>
+                    <td>Remove tiles from a tile layer.</td>
+                </tr>
+                <tr>
+                    <td><strong>Bucket Fill</strong></td>
+                    <td><code>F</code></td>
+                    <td>Fill an area with the selected tile.</td>
+                </tr>
+                <tr>
+                    <td><strong>Rectangle Select</strong></td>
+                    <td><code>R</code></td>
+                    <td>Select a rectangular region to copy, move, or delete.</td>
+                </tr>
+                <tr>
+                    <td><strong>Insert Rectangle</strong></td>
+                    <td><code>R</code> (on object layer)</td>
+                    <td>Draw a rectangle object on an object layer.</td>
+                </tr>
+                <tr>
+                    <td><strong>Select Objects</strong></td>
+                    <td><code>S</code></td>
+                    <td>Select, move, and resize objects on an object layer.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-box">
+            When working with <strong>tile layers</strong>, you use the Stamp Brush to paint tiles.
+            When working with <strong>object layers</strong>, you use the Insert Rectangle tool to draw zones.
+            Tiled automatically switches your available tools based on the selected layer type.
+        </div>
+
+        <!-- ========================================
+             OPENING THE PROJECT
+             ======================================== -->
+        <h2>Opening the Odyssey Project</h2>
+
+        <p>
+            The Odyssey repository includes a Tiled project file that automatically configures all the tilesets
+            and map paths. Opening this project is the fastest way to get started.
+        </p>
+
+        <ol>
+            <li>Open Tiled</li>
+            <li>Go to <strong>File &gt; Open File or Project...</strong></li>
+            <li>Navigate to the Odyssey repository folder</li>
+            <li>Open <code>assets/tiled/odyssey-dungeon.tiled-project</code></li>
+        </ol>
+
+        <p>
+            Once the project is open, you will see all existing maps in the Project panel. You can double-click
+            any map to open it. All tilesets referenced by the project will be available automatically.
+        </p>
+
+        <img src="img/tiled-project-open.png" alt="Tiled with the Odyssey project open, showing the project panel with map files listed" class="screenshot">
+
+        <!-- ========================================
+             IMPORTANT SETTINGS
+             ======================================== -->
+        <h2>Important Settings</h2>
+
+        <p>
+            Before creating maps, make sure these settings are correct. The Odyssey engine requires specific
+            formats when reading map files:
+        </p>
+
+        <ul>
+            <li>
+                <strong>Map Orientation:</strong> <code>Orthogonal</code> &mdash;
+                Odyssey does not support isometric or hexagonal maps.
+            </li>
+            <li>
+                <strong>Tile Layer Format:</strong> <code>CSV</code> &mdash;
+                The engine parses CSV-encoded tile data. Other formats (Base64, zlib, etc.) are not supported.
+            </li>
+            <li>
+                <strong>Tile Render Order:</strong> <code>Right Down</code> &mdash;
+                This is the default and should not be changed.
+            </li>
+            <li>
+                <strong>Tile Size:</strong> <code>32 x 32</code> pixels &mdash;
+                This is mandatory. The engine uses tile size for all coordinate conversions.
+            </li>
+        </ul>
+
+        <div class="warning-box">
+            If the tile layer format is not set to CSV, the server will fail to load the map.
+            You can change this in <strong>Map &gt; Map Properties &gt; Tile Layer Format</strong>.
+        </div>
+
+        <hr>
+
+        <div class="breadcrumb">
+            <a href="index.html" class="prev">Home</a>
+            <a href="creating-a-map.html" class="next">Creating a Map</a>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html" class="active">Home</a>
+            <a href="getting-started.html">Getting Started</a>
+            <a href="creating-a-map.html">Creating a Map</a>
+            <a href="tile-layers.html">Tile Layers</a>
+            <a href="object-layers.html">Object Layers</a>
+            <a href="map-properties.html">Map Properties</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="coordinate-reference.html">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div style="height: 24px"></div>
+
+        <h1>Odyssey Map Making Guide</h1>
+        <p class="subtitle">A complete guide to creating maps for the Odyssey RPG using the Tiled map editor.</p>
+
+        <p>
+            Odyssey uses <a href="https://www.mapeditor.org/" target="_blank">Tiled</a>, a free and open-source 2D map editor,
+            to define its game maps. Each map is saved as a <code>.tmx</code> file that both the game client and server load
+            to build the 3D world. Maps are composed of <strong>tile layers</strong> (which become 3D geometry like floors,
+            walls, and ceilings) and <strong>object layers</strong> (which define game logic like warps, monster spawns,
+            and locked doors).
+        </p>
+        <p>
+            This guide will walk you through everything you need to know to create maps for Odyssey, from installing
+            Tiled to placing every type of layer the game engine recognizes.
+        </p>
+
+        <img src="img/ingame-finished-map.png" alt="In-game view of a finished Odyssey map showing walls, floor, objects, and lighting" class="screenshot">
+
+        <h2>Tutorial Chapters</h2>
+
+        <div class="card-grid">
+            <a href="getting-started.html" class="card">
+                <span class="card-number">1</span>
+                <h3>Getting Started</h3>
+                <p>Download and install Tiled, learn the interface, and open the Odyssey project.</p>
+            </a>
+
+            <a href="creating-a-map.html" class="card">
+                <span class="card-number">2</span>
+                <h3>Creating a Map</h3>
+                <p>Set up a new map with the correct settings, add tilesets, and create your first layers.</p>
+            </a>
+
+            <a href="tile-layers.html" class="card">
+                <span class="card-number">3</span>
+                <h3>Tile Layers</h3>
+                <p>Floor, Walls, Objects, Doors, Ceiling, and more &mdash; everything that becomes 3D geometry.</p>
+            </a>
+
+            <a href="object-layers.html" class="card">
+                <span class="card-number">4</span>
+                <h3>Object Layers</h3>
+                <p>Warps, monster spawns, locks, touchplates, items, and other game logic zones.</p>
+            </a>
+
+            <a href="map-properties.html" class="card">
+                <span class="card-number">5</span>
+                <h3>Map Properties</h3>
+                <p>Configure map-wide settings like PvP mode, indoor lighting, ambient level, and music.</p>
+            </a>
+
+            <a href="advanced.html" class="card">
+                <span class="card-number">6</span>
+                <h3>Advanced Topics</h3>
+                <p>Roofs, variable wall heights, point lights, particle effects, and directional wall overlays.</p>
+            </a>
+
+            <a href="coordinate-reference.html" class="card">
+                <span class="card-number">7</span>
+                <h3>Coordinate Reference</h3>
+                <p>How Tiled's 2D coordinates translate to the game's 3D world, with conversion formulas.</p>
+            </a>
+        </div>
+
+        <hr>
+
+        <div class="quick-ref">
+            <h2>Quick Reference: All Recognized Layers</h2>
+            <p>The Odyssey engine recognizes the following layer names. Names are <strong>case-sensitive</strong> and must match exactly.</p>
+
+            <h3>Tile Layers</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Layer Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>Floor</code></td>
+                        <td>Base ground tiles, rendered as flat quads at ground level</td>
+                    </tr>
+                    <tr>
+                        <td><code>Floor2</code></td>
+                        <td>Overlay floor decals (carpets, paths), rendered slightly above the Floor layer</td>
+                    </tr>
+                    <tr>
+                        <td><code>Walls</code></td>
+                        <td>Solid blocking walls, rendered as 3D cubes</td>
+                    </tr>
+                    <tr>
+                        <td><code>Walls2</code></td>
+                        <td>Wall overlay decorations (torches, signs), with optional directional face control</td>
+                    </tr>
+                    <tr>
+                        <td><code>Objects</code></td>
+                        <td>Billboard sprites (trees, barrels, furniture) that always face the camera</td>
+                    </tr>
+                    <tr>
+                        <td><code>Doors</code></td>
+                        <td>Animated doors (swinging) and gates (rising)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Ceiling</code></td>
+                        <td>Overhead ceiling tiles for indoor areas</td>
+                    </tr>
+                    <tr>
+                        <td><code>Roof</code></td>
+                        <td>Roof surface textures (used with Roof object layer for geometry)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Object Layers</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Layer Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>Warps</code></td>
+                        <td>Teleport zones that move players between maps</td>
+                    </tr>
+                    <tr>
+                        <td><code>Spawns</code></td>
+                        <td>Monster spawner areas with spawn ID, count, and delay</td>
+                    </tr>
+                    <tr>
+                        <td><code>NM</code></td>
+                        <td>No-Monster zones where monsters cannot enter</td>
+                    </tr>
+                    <tr>
+                        <td><code>Keep</code></td>
+                        <td>Guild keep / safe zones (similar to NM)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Locks</code></td>
+                        <td>Marks doors within the area as locked (guild, key, or member lock)</td>
+                    </tr>
+                    <tr>
+                        <td><code>TP</code></td>
+                        <td>Touchplate zones that open a specific locked door when stepped on</td>
+                    </tr>
+                    <tr>
+                        <td><code>Bootmap</code></td>
+                        <td>Logout relocation zones (players are moved on disconnect)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Items</code></td>
+                        <td>Static item spawns on the ground</td>
+                    </tr>
+                    <tr>
+                        <td><code>Properties</code></td>
+                        <td>Map-wide settings (name, PvP, indoor, ambient, music)</td>
+                    </tr>
+                    <tr>
+                        <td><code>WallHeight</code></td>
+                        <td>Overrides wall height for a region (for tall walls and towers)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Walls2</code></td>
+                        <td>Controls which faces render on Walls2 tile layer (directional mask)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Roof</code></td>
+                        <td>Defines roof geometry (ridge direction, slope angle, hip vs gable)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Lights</code></td>
+                        <td>Point light placements with intensity, color, and flicker</td>
+                    </tr>
+                    <tr>
+                        <td><code>FX</code></td>
+                        <td>Particle effect placements (fire, smoke, sparkles)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="breadcrumb">
+            <span></span>
+            <a href="getting-started.html" class="next">Getting Started</a>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>

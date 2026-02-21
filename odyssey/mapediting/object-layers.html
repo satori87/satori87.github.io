@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Layers - Odyssey Map Making Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="getting-started.html">Getting Started</a>
+            <a href="creating-a-map.html">Creating a Map</a>
+            <a href="tile-layers.html">Tile Layers</a>
+            <a href="object-layers.html" class="active">Object Layers</a>
+            <a href="map-properties.html">Map Properties</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="coordinate-reference.html">Coordinates</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="tile-layers.html" class="prev">Tile Layers</a>
+            <a href="map-properties.html" class="next">Map Properties</a>
+        </div>
+
+        <h1>Object Layers</h1>
+        <p class="subtitle">Object layers define invisible game logic zones &mdash; warps, spawns, locks, and more.</p>
+
+        <p>
+            Unlike tile layers (which create visible geometry), object layers define <strong>invisible zones</strong>
+            that control game behavior. You draw rectangles on these layers and set custom properties to tell the
+            engine what should happen when a player enters the zone.
+        </p>
+
+        <h4>How to Draw Objects</h4>
+        <ol>
+            <li>Select the object layer in the Layers panel</li>
+            <li>Choose the <strong>Insert Rectangle</strong> tool from the toolbar (or press <code>R</code>)</li>
+            <li>Click and drag on the map to draw a rectangle</li>
+            <li>With the rectangle selected, set its custom properties in the Properties panel</li>
+        </ol>
+
+        <div class="tip-box">
+            Enable <strong>View &gt; Snapping &gt; Snap to Grid</strong> to align your rectangles precisely
+            to tile boundaries. This is especially important for Locks and TP zones that need to cover exact tile positions.
+        </div>
+
+        <!-- ========================================
+             WARPS
+             ======================================== -->
+        <div class="layer-card" id="warps">
+            <h3>Warps</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Warps</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                Warp zones teleport players to another map (or another location on the same map) when they walk
+                into the zone. This is how you connect maps together &mdash; dungeon entrances, town gates,
+                stairways, etc.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>map</code></td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>Target map ID (the filename without <code>.tmx</code>). Example: <code>dark-cavern</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>x</code></td>
+                        <td>int</td>
+                        <td>Yes</td>
+                        <td>Target X tile coordinate on the destination map (as it appears in Tiled)</td>
+                    </tr>
+                    <tr>
+                        <td><code>y</code></td>
+                        <td>int</td>
+                        <td>Yes</td>
+                        <td>Target Y tile coordinate on the destination map (as it appears in Tiled)</td>
+                    </tr>
+                    <tr>
+                        <td><code>dir</code></td>
+                        <td>int</td>
+                        <td>No</td>
+                        <td>Degrees to add to the player's facing direction upon arrival. Example: <code>180</code> to turn them around.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Example</h4>
+            <p>
+                To create a warp from an outdoor map to a dungeon entrance:
+            </p>
+            <ol>
+                <li>Draw a rectangle across the dungeon entrance doorway on the <code>Warps</code> layer</li>
+                <li>Set <code>map</code> to the dungeon's map ID (e.g., <code>dark-cavern</code>)</li>
+                <li>Set <code>x</code> and <code>y</code> to the tile position where the player should appear in the dungeon</li>
+                <li>Optionally set <code>dir</code> to <code>180</code> so the player faces away from the entrance</li>
+            </ol>
+
+            <div class="info-box">
+                The <code>x</code> and <code>y</code> values use the same coordinate system you see in Tiled.
+                If you want the player to appear at tile column 5, row 10 on the target map, set <code>x=5</code> and <code>y=10</code>.
+            </div>
+
+            <div class="tip-box">
+                Remember to create a matching warp on the destination map that goes back to the source map.
+                Otherwise, players can enter but not leave.
+            </div>
+
+            <img src="img/layer-warps.png" alt="Warps layer showing a rectangle warp zone drawn across a doorway, with the Properties panel displaying map, x, y, and dir properties" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             SPAWNS
+             ======================================== -->
+        <div class="layer-card" id="spawns">
+            <h3>Spawns</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Spawns</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                Spawn zones define areas where monsters appear. Each spawn zone produces a specific type of
+                monster at a configurable rate.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>SPAWN_ID</code></td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>The monster type ID from the database. This must match an existing monster definition.</td>
+                    </tr>
+                    <tr>
+                        <td><code>SPAWN_COUNT</code></td>
+                        <td>int</td>
+                        <td>No</td>
+                        <td>Maximum number of monsters alive at once from this spawner. Default: <code>1</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>SPAWN_DELAY</code></td>
+                        <td>int</td>
+                        <td>No</td>
+                        <td>Seconds between respawns after a monster is killed. Default: <code>5</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>How Spawning Works</h4>
+            <ul>
+                <li>Monsters spawn at random positions within the rectangle</li>
+                <li>The spawner keeps <code>SPAWN_COUNT</code> monsters alive at all times</li>
+                <li>When a monster dies, a new one spawns after <code>SPAWN_DELAY</code> seconds (with &plusmn;20% randomness)</li>
+                <li>Monsters roam within and around their spawn area</li>
+                <li>If the map has no players for 5+ seconds, spawning and monster updates pause for performance</li>
+            </ul>
+
+            <div class="tip-box">
+                Make spawn rectangles large enough for monsters to spread out naturally. A single-tile
+                rectangle will cause all monsters to spawn on top of each other.
+            </div>
+
+            <img src="img/layer-spawns.png" alt="Spawns layer showing spawner rectangles with SPAWN_ID, SPAWN_COUNT, and SPAWN_DELAY visible in the Properties panel" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             NM (No Monster)
+             ======================================== -->
+        <div class="layer-card" id="nm">
+            <h3>NM (No Monster)</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>NM</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                No-Monster zones prevent monsters from entering an area. Monsters cannot pathfind into or
+                through these zones. Use them to create safe areas around town NPCs, shop entrances,
+                respawn points, or any area that should be free of monsters.
+            </p>
+
+            <h4>Properties</h4>
+            <p>
+                <strong>None.</strong> Simply draw rectangles over the areas you want to protect.
+                No custom properties are needed.
+            </p>
+
+            <h4>Tips</h4>
+            <ul>
+                <li>Make NM zones slightly larger than the area you want to protect for a comfortable buffer</li>
+                <li>If a monster's spawn area overlaps an NM zone, it will still try to spawn but cannot move into the NM zone</li>
+                <li>Players can still be attacked by monsters <em>outside</em> the NM zone if they are close to the edge</li>
+            </ul>
+
+            <img src="img/layer-nm.png" alt="NM layer showing no-monster zone rectangles drawn around a town center / NPC area" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             KEEP
+             ======================================== -->
+        <div class="layer-card" id="keep">
+            <h3>Keep</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Keep</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                Keep zones define guild-owned safe areas. They function like NM zones (monsters cannot enter),
+                but are specifically intended for guild halls and keeps. The engine uses Keep zones to identify
+                the guild's protected territory.
+            </p>
+
+            <h4>Properties</h4>
+            <p>
+                <strong>None.</strong> Draw rectangles over the guild's safe area.
+            </p>
+
+            <img src="img/layer-keep.png" alt="Keep layer showing a safe zone rectangle covering a guild hall interior" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             LOCKS
+             ======================================== -->
+        <div class="layer-card" id="locks">
+            <h3>Locks</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Locks</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                Lock zones mark doors within the covered area as <strong>locked</strong>. Locked doors do not
+                open automatically when a player walks near them. Instead, they require a specific condition
+                to unlock (a key item, guild membership, or a touchplate).
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>lock</code></td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>Lock identifier. See lock types below.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Lock Types</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Lock Value</th>
+                        <th>Behavior</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>"guild"</code></td>
+                        <td>Opens for any member of the guild that owns this map's keep</td>
+                    </tr>
+                    <tr>
+                        <td><code>"guildmember"</code></td>
+                        <td>Opens for guild members with rank Member or higher</td>
+                    </tr>
+                    <tr>
+                        <td>Any other string</td>
+                        <td>Requires a key item with a matching lock ID to open</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>How to Use</h4>
+            <ol>
+                <li>First, place door tiles on the <code>Doors</code> layer</li>
+                <li>Create a <code>Locks</code> object layer</li>
+                <li>Draw a rectangle that covers the door tile(s) you want to lock</li>
+                <li>Set the <code>lock</code> property on the rectangle</li>
+            </ol>
+
+            <div class="warning-box">
+                The lock rectangle must overlap the exact tile position of the door. Use
+                <strong>Snap to Grid</strong> to align the rectangle precisely. If the rectangle
+                misses the door tile, the door will remain unlocked.
+            </div>
+
+            <p>
+                Locked doors can be opened temporarily by <a href="#tp">Touchplates</a>, or permanently
+                (for the duration) by guild access or key items. When unlocked by a touchplate or key,
+                the door opens for 5 seconds before closing and locking again.
+            </p>
+
+            <img src="img/layer-locks.png" alt="Locks layer showing a lock rectangle overlapping a door tile, with the lock property set to "guild" in the Properties panel" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             TP (Touchplates)
+             ======================================== -->
+        <div class="layer-card" id="tp">
+            <h3>TP (Touchplates)</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>TP</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                Touchplate zones are pressure plates. When a player walks into the zone, a specific locked door
+                elsewhere on the map opens for 5 seconds. The door stays open as long as a player is standing
+                on the touchplate, and closes 5 seconds after they step off.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>x</code></td>
+                        <td>int</td>
+                        <td>Yes</td>
+                        <td>Tiled X coordinate (column) of the target door</td>
+                    </tr>
+                    <tr>
+                        <td><code>y</code></td>
+                        <td>int</td>
+                        <td>Yes</td>
+                        <td>Tiled Y coordinate (row) of the target door</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>How to Use</h4>
+            <ol>
+                <li>Place a door tile on the <code>Doors</code> layer</li>
+                <li>Lock the door using the <code>Locks</code> layer (so it does not open by proximity)</li>
+                <li>Create a <code>TP</code> object layer</li>
+                <li>Draw a rectangle where you want the pressure plate to be</li>
+                <li>Set <code>x</code> and <code>y</code> to the tile coordinates of the locked door (hover over the door tile in Tiled to see its coordinates in the status bar)</li>
+            </ol>
+
+            <div class="info-box">
+                The <code>x</code> and <code>y</code> properties use Tiled's coordinate system (the same
+                column and row numbers you see when you hover over a tile in the editor). The engine
+                automatically handles the coordinate conversion internally.
+            </div>
+
+            <div class="tip-box">
+                The target door must exist and be locked for the touchplate to work. The engine validates
+                this at map load time and will log an error if no door is found at the specified coordinates.
+            </div>
+
+            <img src="img/layer-tp.png" alt="TP layer showing a touchplate rectangle drawn near a floor area, with x and y properties in the Properties panel pointing to a locked door on the same map" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             BOOTMAP
+             ======================================== -->
+        <div class="layer-card" id="bootmap">
+            <h3>Bootmap</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Bootmap</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                Bootmap zones handle player logout relocation. If a player logs out (or disconnects) while
+                standing inside a bootmap zone, their saved position is changed to the specified target location.
+                When they log back in, they appear at the target &mdash; not where they logged out.
+            </p>
+
+            <p>
+                This is useful for instanced or temporary areas like dungeon boss rooms, event arenas, or
+                any area where players should not be able to log in directly.
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>map</code></td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>Target map ID where the player should appear on next login</td>
+                    </tr>
+                    <tr>
+                        <td><code>x</code></td>
+                        <td>int</td>
+                        <td>Yes</td>
+                        <td>Target X tile coordinate</td>
+                    </tr>
+                    <tr>
+                        <td><code>y</code></td>
+                        <td>int</td>
+                        <td>Yes</td>
+                        <td>Target Y tile coordinate</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <img src="img/layer-bootmap.png" alt="Bootmap layer showing a relocation zone covering a dungeon area, with map, x, y properties in the Properties panel" class="screenshot">
+        </div>
+
+        <!-- ========================================
+             ITEMS
+             ======================================== -->
+        <div class="layer-card" id="items">
+            <h3>Items</h3>
+            <div class="layer-meta">
+                <span>Layer Name: <strong>Items</strong></span>
+                <span>Type: <strong>Object Layer</strong></span>
+            </div>
+
+            <p>
+                The Items layer defines static item spawns &mdash; items that appear on the ground when the map
+                loads. Players can pick them up, and they respawn after all players leave the map (with a 2-minute delay).
+            </p>
+
+            <h4>Properties</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>item_id</code></td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>Item type ID from the database (e.g., <code>health-potion</code>, <code>gold</code>, <code>iron-sword</code>)</td>
+                    </tr>
+                    <tr>
+                        <td><code>qty</code></td>
+                        <td>int</td>
+                        <td>No</td>
+                        <td>Quantity of the item. Default: <code>1</code>. For stackable items like gold or potions, set higher values.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Tips</h4>
+            <ul>
+                <li>Items spawn at the center of the object's position &mdash; a small rectangle or point object works fine</li>
+                <li>Use for treasure rooms, supply caches, or world items that players can discover</li>
+                <li>The <code>item_id</code> must match an existing item definition in the database</li>
+            </ul>
+
+            <img src="img/layer-items.png" alt="Items layer showing point objects with item_id and qty properties for scattered loot (gold, potions, a weapon)" class="screenshot">
+        </div>
+
+        <hr>
+
+        <h2>Summary</h2>
+        <p>
+            Object layers are the backbone of game logic in your maps. They define how players move between
+            maps (Warps), where monsters appear (Spawns), what areas are safe (NM, Keep), how doors are
+            secured (Locks, TP), where players respawn on logout (Bootmap), and what items are found on the
+            ground (Items).
+        </p>
+        <p>
+            Next, we will cover the <strong>Properties</strong> layer, which controls map-wide settings
+            like PvP mode, lighting, and music.
+        </p>
+
+        <div class="breadcrumb">
+            <a href="tile-layers.html" class="prev">Tile Layers</a>
+            <a href="map-properties.html" class="next">Map Properties</a>
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Odyssey Map Making Guide</p>
+    </footer>
+</body>
+</html>
